@@ -234,6 +234,29 @@ func get_voice_file_for_russian_line(line_id: String, character: String = "") ->
 	
 	return text_to_filename(russian_text, character)
 
+# Получить длительность озвучки для реплики (использует VoiceTimingManager)
+func get_voice_duration_for_line(line_id: String, character: String = "") -> float:
+	if not _rusifier_loaded:
+		return 0.0
+	
+	# Пробуем получить из VoiceTimingManager если доступен
+	var timing_manager = get_node_or_null("/root/VoiceTimingManager")
+	if timing_manager:
+		return timing_manager.get_timing_for_line(line_id, character)
+	
+	# Если VoiceTimingManager недоступен, пробуем загрузить файл и измерить
+	var filename = get_voice_file_for_russian_line(line_id, character)
+	if filename.is_empty():
+		return 0.0
+	
+	var full_path = VOICE_FOLDER + filename
+	if ResourceLoader.exists(full_path):
+		var stream = load(full_path) as AudioStream
+		if stream:
+			return stream.get_length()
+	
+	return 0.0
+
 # Очистить кэш аудио (освободить память)
 func clear_cache() -> void:
 	_audio_cache.clear()
