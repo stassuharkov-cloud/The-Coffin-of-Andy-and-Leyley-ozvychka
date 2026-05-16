@@ -1,6 +1,7 @@
 # Мод озвучки для The Coffin of Andy and Leyley
 
 Этот мод добавляет систему воспроизводства голосовой озвучки для диалогов в игре.
+**Поддерживает автоматическую работу с русификатором** (файл `Русский.cld` из `The Coffin of Andy and Leyley\www\languages`).
 
 ## 📁 Структура папок
 
@@ -9,6 +10,8 @@ voice_mod/
 ├── autoload/
 │   ├── VoiceManager.gd              # Основной менеджер голоса
 │   └── DialogueVoiceIntegration.gd  # Интеграция с диалогами
+├── languages/                       # ПАПКА ДЛЯ РУСИФИКАТОРА
+│   └── Русский.cld                  # Файл русификатора (обязателен для авто-озвучки)
 ├── audio/                           # ПАПКА ДЛЯ ВАШИХ ФАЙЛОВ ОЗВУЧКИ
 │   ├── andy_hello.flac
 │   ├── leyley_greeting.flac
@@ -17,34 +20,37 @@ voice_mod/
     └── voice_settings.ini           # Настройки мода
 ```
 
-## 🎤 Как добавить озвучку
+## 🎤 Как работает озвучка с русификатором
 
-### Вариант 1: Именование по тексту реплики (автоматическое)
+### Автоматический режим (рекомендуется)
 
-Система автоматически преобразует текст реплики в имя файла:
+Система **автоматически** использует реплики из русификатора для генерации имён файлов озвучки:
+
+1. При показе реплики система берёт её **ID** из диалоговой системы
+2. Находит русский текст этой реплики в файле `Русский.cld`
+3. Преобразует русский текст в имя файла
+4. Воспроизводит соответствующий аудиофайл
 
 **Пример:**
-- Реплика: `"Привет, Энди!"` от персонажа `andy`
-- Имя файла: `andy_privet_endi.flac`
+- ID реплики в игре: `F6mK5ZQ0`
+- Русский текст из русификатора: `"У тебя кружится голова..."`
+- Имя файла озвучки: `u_tebya_kruzhitsya_golova.flac`
 
-**Правила именования:**
-1. Текст переводится в нижний регистр
-2. Спецсимволы удаляются
-3. Пробелы заменяются на `_`
-4. Добавляется префикс персонажа
-5. Расширение `.flac` (также поддерживаются `.ogg`, `.wav`, `.mp3`)
+### Что если реплики нет в русификаторе?
 
-### Вариант 2: Ручное указание имени файла
+**Система не ломается!** Если реплика не найдена в русификаторе:
+- Озвучка просто не воспроизводится для этой реплики
+- Игра продолжает работать нормально
+- В консоли появляется сообщение: `[DialogueVoice] Нет озвучки для реплики: ...`
 
-Вы можете вручную указать имя файла для каждой реплики в формате:
+### Ручной режим
+
+Вы можете вручную указать имя файла для каждой реплики (как было раньше):
+
+```gdscript
+# Прямое указание имени файла
+VoiceManager.play_voice("andy_ch1_intro_line1.flac")
 ```
-{персонаж}_{контекст}.flac
-```
-
-**Примеры:**
-- `andy_ch1_intro_line1.flac` - Энди, глава 1, интро, строка 1
-- `leyley_kitchen_angry.flac` - Лейли, кухня, злая реплика
-- `andy_final_boss_taunt.flac` - Энди, финальный босс, насмешка
 
 ## 📝 Поддерживаемые имена персонажей
 
@@ -66,16 +72,25 @@ TheCoffinOfAndyAndLeyley/
 └── project.godot
 ```
 
-### Шаг 2: Добавьте автозагрузку
+### Шаг 2: Добавьте файл русификатора
+
+Скопируйте файл русификатора в папку `voice_mod/languages/`:
+```
+voice_mod/languages/Русский.cld
+```
+
+Файл берётся из оригинальной игры: `The Coffin of Andy and Leyley\www\languages\Русский.cld`
+
+### Шаг 3: Добавьте автозагрузку
 
 1. Откройте `Project` → `Project Settings` → `Autoload`
 2. Добавьте следующие файлы как autoload:
    - `res://voice_mod/autoload/VoiceManager.gd` → имя: `VoiceManager`
    - `res://voice_mod/autoload/DialogueVoiceIntegration.gd` → имя: `DialogueVoice` (опционально)
 
-### Шаг 3: Интеграция с диалоговой системой
+### Шаг 4: Интеграция с диалоговой системой
 
-#### Способ A: Автоматическая интеграция
+#### Способ A: Автоматическая интеграция (с поддержкой русификатора)
 
 В основном скрипте диалогов добавьте:
 
@@ -94,20 +109,40 @@ func _ready() -> void:
     )
 ```
 
+**Важно:** Передавайте ID реплики при вызове `show_dialogue()`:
+
+```gdscript
+# В вашей диалоговой системе:
+func show_next_line() -> void:
+    var line_data = get_current_line()  # Ваши данные реплики
+    DialogueVoice.show_dialogue(
+        line_data.text,
+        line_data.speaker,
+        line_data.id  # ID реплики для поиска в русификаторе!
+    )
+```
+
 #### Способ B: Ручной вызов
 
 В месте где показывается текст диалога:
 
 ```gdscript
-func show_dialogue(text: String, speaker: String) -> void:
+func show_dialogue(text: String, speaker: String, line_id: String = "") -> void:
     # Ваш существующий код показа текста
     dialogue_label.text = text
     speaker_label.text = speaker
     
-    # Добавить воспроизведение голоса
+    # Добавить воспроизведение голоса (с ID для русификатора)
     if VoiceManager:
-        var filename = VoiceManager.text_to_filename(text, speaker)
-        VoiceManager.play_voice(filename)
+        # Если есть ID - система сама найдёт реплику в русификаторе
+        if not line_id.is_empty():
+            var filename = VoiceManager.get_voice_file_for_russian_line(line_id, speaker)
+            if not filename.is_empty():
+                VoiceManager.play_voice(filename)
+        else:
+            # Или по старинке - из текста
+            var filename = VoiceManager.text_to_filename(text, speaker)
+            VoiceManager.play_voice(filename)
 ```
 
 #### Способ C: Прямое указание имени файла
@@ -125,6 +160,18 @@ play_character_voice("andy", "hello.flac")  # Воспроизведёт voice_m
 ### Основные функции VoiceManager
 
 ```gdscript
+# Получить русский текст по ID реплики
+var russian_text = VoiceManager.get_russian_text("F6mK5ZQ0")
+# Вернёт: "У тебя кружится голова..."
+
+# Получить имя файла озвучки для русской реплики
+var filename = VoiceManager.get_voice_file_for_russian_line("F6mK5ZQ0", "andy")
+# Вернёт: "u_tebya_kruzhitsya_golova.flac"
+
+# Проверить загружен ли русификатор
+if VoiceManager.is_rusifier_loaded():
+    print("Русификатор активен!")
+
 # Воспроизвести файл
 VoiceManager.play_voice("andy_hello.flac")
 
@@ -168,6 +215,7 @@ func _on_voice_finished() -> void:
 enabled=true              # Включить/выключить озвучку
 volume_db=0.0            # Громкость в децибелах
 cache_enabled=true       # Кэширование аудио файлов
+use_rusifier=true        # Использовать русификатор для авто-имён
 
 [behavior]
 playback_mode="queue"    # queue/immediate/wait
@@ -182,33 +230,32 @@ log_enabled=true         # Логирование в консоль
 ### Рекомендуемая структура для больших проектов:
 
 ```
-voice_mod/audio/
-├── chapter_1/
-│   ├── andy/
-│   │   ├── intro_line1.flac
-│   │   └── kitchen_scene.flac
-│   └── leyley/
-│       ├── intro_line1.flac
-│       └── basement_scene.flac
-├── chapter_2/
-│   └── ...
-└── common/
-    ├── andy_greeting.flac
-    └── leyley_laugh.flac
+voice_mod/
+├── languages/
+│   └── Русский.cld
+├── audio/
+│   ├── chapter_1/
+│   │   ├── andy/
+│   │   │   ├── u_tebya_kruzhitsya_golova.flac
+│   │   │   └── ya_ne_hochu_umirat.flac
+│   │   └── leyley/
+│   │       ├── privet_bratrik.flac
+│   │       └── davay_poedim.flac
+│   ├── chapter_2/
+│   │   └── ...
+│   └── common/
+│       ├── andy_greeting.flac
+│       └── leyley_laugh.flac
 ```
 
-### Для совместимости с русификатором Playground:
+### Как узнать ID реплики?
 
-Используйте формат именования который соответствует ключам перевода:
+ID реплик можно найти в файле русификатора `Русский.cld`. Это короткие строки типа:
+- `F6mK5ZQ0`
+- `rz4CQmyz`
+- `bz5c1ClQ`
 
-```
-# Если в русификаторе ключ: dialogue.ch1.andys_room.line_001
-# Назовите файл: ch1_andys_room_line_001.flac
-
-# Или проще - по тексту:
-# Ключ: "Привет! Как дела?"
-# Файл: privet_kak_dela.flac
-```
+Используйте эти ID в вашей диалоговой системе для автоматической озвучки.
 
 ## 🔍 Отладка
 
@@ -216,13 +263,24 @@ voice_mod/audio/
 
 ```
 [VoiceManager] Инициализирован. Папка: res://voice_mod/audio/
-[VoiceManager] Воспроизводится: andy_hello.flac
-[VoiceManager] Файл не найден: res://voice_mod/audio/leyley_test.flac
+[VoiceManager] Русификатор загружен. Строк: 15114
+[DialogueVoice] Найдена реплика в русификаторе для ID: F6mK5ZQ0
+[VoiceManager] Воспроизводится: u_tebya_kruzhitsya_golova.flac
+[DialogueVoice] Нет озвучки для реплики: Какая-то реплика без озвучки
 ```
 
 ## ❓ Частые проблемы
 
-### Файл не воспроизводится
+### Файл русификатора не найден
+- Убедитесь что файл `Русский.cld` находится в `voice_mod/languages/`
+- Проверьте что путь указан правильно в `VoiceManager.gd`: `const RUSIFIER_PATH := "res://voice_mod/languages/Русский.cld"`
+
+### Озвучка не работает для некоторых реплик
+- Проверьте что ID реплики передаётся в `show_dialogue()`
+- Убедитесь что реплика есть в русификаторе
+- Система **не ломается** если реплики нет - она просто пропускает озвучку
+
+### Файл озвучки не воспроизводится
 - Проверьте что файл находится в `voice_mod/audio/`
 - Убедитесь что имя файла точно совпадает (регистр важен!)
 - Проверьте консоль на ошибки загрузки
@@ -238,7 +296,8 @@ voice_mod/audio/
 ## 📞 Совместимость
 
 - ✅ Все главы (1, 2, 3)
-- ✅ Любой русификатор (включая Playground)
+- ✅ Русификатор Playground и другие (формат `.cld`)
+- ✅ Работает БЕЗ русификатора (не ломается)
 - ✅ Любые форматы аудио: FLAC, OGG, WAV, MP3
 - ✅ Godot 4.x
 
