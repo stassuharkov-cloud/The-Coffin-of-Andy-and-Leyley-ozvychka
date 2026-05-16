@@ -1,0 +1,170 @@
+# Примеры имен файлов для озвучки The Coffin of Andy and Leyley
+
+Этот файл содержит примеры именования аудиофайлов для различных сцен игры.
+
+## 📝 Формат именования
+
+Основной формат: `{персонаж}_{текст_или_контекст}.flac`
+
+## Глава 1 - Примеры
+
+### Энди (Andy)
+
+```
+andy_privet.flac                    # "Привет!"
+andy_kak_dela.flac                  # "Как дела?"
+andy_gde_my.flac                    # "Где мы?"
+andy_ne_nravitsya_mne_tut.flac      # "Не нравится мне тут..."
+andy_poшли_ot_suda.flac             # "Пошли отсюда"
+andy_chto_eto_bilo.flac             # "Что это было?"
+andy_ya_ispugalsya.flac             # "Я испугался"
+andy_ne_volnuysya.flac              # "Не волнуйся"
+andy_vse_budet_horosho.flac         # "Всё будет хорошо"
+andy_posmotri_tam.flac              # "Посмотри там"
+andy_ostorozhno.flac                # "Осторожно!"
+andy_begim.flac                     # "Бежим!"
+```
+
+### Лейли (Leyley)
+
+```
+leyley_privet_brat.flac             # "Привет, брат!"
+leyley_mne_skuchno.flac             # "Мне скучно..."
+leyley_davaй_pogulyaem.flac         # "Давай погуляем"
+leyley_tam_chto_to_est.flac         # "Там что-то есть"
+leyley_smotri.flac                  # "Смотри!"
+leyley_klassno.flac                 # "Классно!"
+leyley_ne_boisya.flac               # "Не бойся"
+leyley_ya_znayu_chto_delat.flac     # "Я знаю что делать"
+leyley_poslushay_menya.flac         # "Послушай меня"
+leyley_eto_budet_veselo.flac        # "Это будет весело"
+leyley_krov.flac                    # "Кровь..."
+leyley_myasо.flac                   # "Мясо..."
+```
+
+## Глава 2 - Примеры
+
+### Энди
+
+```
+andy_glava2_nachalo.flac            # Начало главы 2
+andy_chto_sluchilos.flac            # "Что случилось?!"
+andy_my_dolzhny_ubrat_eto.flac      # "Мы должны убрать это"
+andy_pochemu_ty_eto_sdelala.flac    # "Почему ты это сделала?"
+andy_etogo_ne_dolzhno_bilo_sluchitsya.flac
+andy_nam_nuzhno_uhodit.flac         # "Нам нужно уходить"
+andy_srokhi.flac                    # "Сроки..."
+andy_pomogi_mne.flac                # "Помоги мне"
+andy_ya_ne_hotel.flac               # "Я не хотел..."
+andy_prosti_menya.flac              # "Прости меня"
+```
+
+### Лейли
+
+```
+leyley_glava2_nachalo.flac          # Начало главы 2
+leyley_vsyo_pod_kontrolem.flac      # "Всё под контролем"
+leyley_ne_volnuysya_brat.flac       # "Не волнуйся, брат"
+leyley_etogo_i_zasluzhivali.flac    # "Этого и заслуживали"
+leyley_mne_nravitsya_eto.flac       # "Мне нравится это"
+leyley_dover_sya_mne.flac           # "Доверься мне"
+leyley_my_vmeste_v_eto.flac         # "Мы вместе в этом"
+leyley_nikto_ne_uznaet.flac         # "Никто не узнает"
+leyley_ti_zhe_lyubish_menya.flac    # "Ты же любишь меня?"
+leyley_my_semya.flac                # "Мы семья"
+```
+
+## Глава 3 - Примеры
+
+### Энди
+
+```
+andy_glava3_nachalo.flac            # Начало главы 3
+andy_kak_my_doshli_do_etogo.flac    # "Как мы дошли до этого?"
+andy_vse_koncheno.flac              # "Всё кончено..."
+andy_ya_bolshe_ne_mogu.flac         # "Я больше не могу"
+andy_gde_vyhod.flac                 # "Где выход?"
+andy_spasenie.flac                  # "Спасение..."
+andy_nadezhda.flac                  # "Надежда..."
+andy_proshenie.flac                 # "Прощение..."
+andy_konets_puti.flac               # "Конец пути"
+andy_poslednie_slova.flac           # Последние слова
+```
+
+### Лейли
+
+```
+leyley_glava3_nachalo.flac          # Начало главы 3
+leyley_vsyo_idet_po_planu.flac      # "Всё идёт по плану"
+leyley_ti_ne_ponimaesh.flac         # "Ты не понимаешь"
+leyley_eto_edinstvenniy_put.flac    # "Это единственный путь"
+leyley_my_svobodni.flac             # "Мы свободны"
+leyley_nakonec_to.flac              # "Наконец-то!"
+leyley_tebe_nikogda_ne_ponyat.flac  # "Тебе никогда не понять"
+leyley_ya_sdelala_eto_radi_nas.flac # "Я сделала это ради нас"
+leyley_posledniy_shag.flac          # "Последний шаг"
+leyley_vechno_vmeste.flac           # "Вечно вместе"
+```
+
+## Общие фразы / Реакции
+
+### Энди
+
+```
+andy_da.flac                        # "Да"
+andy_net.flac                       # "Нет"
+andy_mozhet_byt.flac                # "Может быть"
+andy_ne_znayu.flac                  # "Не знаю"
+andy_konechno.flac                  # "Конечно"
+andy_navernoe.flac                  # "Наверное"
+andy_uh.flac                        # "Ух..."
+andy_oh.flac                        # "Ох..."
+andy_agh.flac                       # "Агх!"
+andy_ooo.flac                       # "Ооо..."
+```
+
+### Лейли
+
+```
+leyley_da.flac                      # "Да"
+leyley_net.flac                     # "Нет"
+leyley_he_he.flac                   # "Хе-хе..."
+leyley_ha_ha_ha.flac                # "Ха-ха-ха!"
+leyley_hi_hi.flac                   # "Хи-хи..."
+leyley_mda.flac                     # "Мда..."
+leyley_nu_nu.flac                   # "Ну-ну..."
+leyley_inter_esno.flac              # "Интересно..."
+leyley_stranno.flac                 # "Странно..."
+```
+
+## Альтернативный формат - по ID диалога
+
+Если вы используете русификатор с ключами:
+
+```
+# Формат: {глава}_{локация}_{номер_строки}_{персонаж}.flac
+
+ch1_intro_001_andy.flac
+ch1_intro_002_leyley.flac
+ch1_kitchen_015_andy.flac
+ch1_kitchen_016_leyley.flac
+ch2_basement_042_andy.flac
+ch2_basement_043_leyley.flac
+ch3_final_100_andy.flac
+ch3_final_101_leyley.flac
+```
+
+## Советы
+
+1. **Используйте нижний регистр** - `andy_privet.flac` а не `Andy_Privet.flac`
+2. **Транслитерация** - используйте латиницу для совместимости
+3. **Без спецсимволов** - только буквы, цифры и подчеркивания
+4. **Короткие имена** - легче управлять и искать
+5. **Единый стиль** - выберите один формат и придерживайтесь его
+
+## Поддерживаемые расширения
+
+- `.flac` - рекомендуется (лучшее качество без потерь)
+- `.ogg` - хорошее сжатие
+- `.wav` - без сжатия (больший размер)
+- `.mp3` - максимальное сжатие
