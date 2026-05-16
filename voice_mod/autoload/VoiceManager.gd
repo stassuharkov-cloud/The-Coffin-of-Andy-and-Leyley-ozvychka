@@ -2,12 +2,16 @@ extends Node
 
 # Voice Manager для The Coffin of Andy and Leyley
 # Автоматически воспроизводит озвучку при появлении текста диалога
+# Поддерживает русификатор из The Coffin of Andy and Leyley\www\languages
 
 signal voice_started(file_name: String)
 signal voice_finished()
 
 # Путь к папке с голосовыми файлами
 const VOICE_FOLDER := "res://voice_mod/audio/"
+
+# Путь к файлу русификатора (настраивается под вашу структуру)
+const RUSIFIER_PATH := "res://voice_mod/languages/Русский.cld"
 
 # Кэш загруженных аудио потоков
 var _audio_cache: Dictionary = {}
@@ -19,6 +23,10 @@ var _current_file: String = ""
 var _queue: Array[String] = []
 # Флаг, что сейчас играет голос
 var is_playing: bool = false
+
+# Данные русификатора
+var _rusifier_data: Dictionary = {}
+var _rusifier_loaded: bool = false
 
 # Маппинг имен персонажей (можно расширять)
 const CHARACTER_NAMES := {
@@ -33,7 +41,12 @@ const CHARACTER_NAMES := {
 func _ready() -> void:
 	add_to_group("voice_manager")
 	_create_audio_player()
+	_load_rusifier()
 	print("[VoiceManager] Инициализирован. Папка: ", VOICE_FOLDER)
+	if _rusifier_loaded:
+		print("[VoiceManager] Русификатор загружен. Строк: ", _rusifier_data.get("linesLUT", {}).size())
+	else:
+		print("[VoiceManager] Русификатор не найден или не загружен. Будет работать без него.")
 
 func _create_audio_player() -> void:
 	_current_player = AudioStreamPlayer.new()
@@ -46,6 +59,36 @@ func _on_voice_finished() -> void:
 	_current_file = ""
 	voice_finished.emit()
 	_process_queue()
+
+# Загрузка данных русификатора
+func _load_rusifier() -> void:
+	if not ResourceLoader.exists(RUSIFIER_PATH):
+		print("[VoiceManager] Файл русификатора не найден: ", RUSIFIER_PATH)
+		_rusifier_loaded = false
+		return
+	
+	var file = FileAccess.open(RUSIFIER_PATH, FileAccess.READ)
+	if file == null:
+		print("[VoiceManager] Не удалось открыть файл русификатора")
+		_rusifier_loaded = false
+		return
+	
+	var content = file.get_as_text()
+	file.close()
+	
+	# Убираем префикс LANGDATA если есть
+	if content.begins_with("LANGDATA"):
+		content = content.substr(8)
+	
+	var json = JSON.new()
+	var error = json.parse(content)
+	if error != OK:
+		print("[VoiceManager] Ошибка парсинга JSON русификатора: ", error)
+		_rusifier_loaded = false
+		return
+	
+	_rusifier_data = json.data
+	_rusifier_loaded = true
 
 # Основная функция для воспроизводства голоса по имени файла
 func play_voice(file_name: String) -> void:
@@ -116,9 +159,28 @@ func _load_audio_stream(path: String) -> AudioStream:
 	
 	return stream
 
+# Получить русский текст реплики по ID из русификатора
+# Возвращает пустую строку если не найдено (не ломается)
+func get_russian_text(line_id: String) -> String:
+	if not _rusifier_loaded:
+		return ""
+	
+	var lines_lut = _rusifier_data.get("linesLUT", {})
+	if lines_lut.has(line_id):
+		var entry = lines_lut[line_id]
+		if entry is Array and entry.size() > 0:
+			return str(entry[0])
+		elif entry is String:
+			return entry
+	
+	return ""
+
 # Утилита для создания имени файла из текста реплики
 # Например: "Привет, Энди!" -> "privet_endi.flac"
 static func text_to_filename(text: String, character: String = "") -> String:
+	if text.is_empty():
+		return ""
+	
 	var filename = text.to_lower()
 	
 	# Удаляем спецсимволы
@@ -148,6 +210,9 @@ static func text_to_filename(text: String, character: String = "") -> String:
 	if result.length() > 100:
 		result = result.substr(0, 100)
 	
+	if result.is_empty():
+		return ""
+	
 	return result + ".flac"
 
 # Функция для получения имени файла на основе контекста
@@ -159,6 +224,15 @@ func get_voice_file(character: String, dialogue_id: String, line_number: int = -
 		return "%s_ch%s_line%d.flac" % [char_key, dialogue_id, line_number]
 	else:
 		return "%s_%s.flac" % [char_key, dialogue_id]
+
+# Получить имя файла озвучки для русской реплики по ID
+# Если реплики нет в русификаторе - вернет пустую строку (не ломается)
+func get_voice_file_for_russian_line(line_id: String, character: String = "") -> String:
+	var russian_text = get_russian_text(line_id)
+	if russian_text.is_empty():
+		return ""  # Реплика не найдена, возвращаем пустую строку
+	
+	return text_to_filename(russian_text, character)
 
 # Очистить кэш аудио (освободить память)
 func clear_cache() -> void:
@@ -183,3 +257,6 @@ func get_current_file() -> String:
 
 func is_busy() -> bool:
 	return is_playing or not _queue.is_empty()
+
+func is_rusifier_loaded() -> bool:
+	return _rusifier_loaded
