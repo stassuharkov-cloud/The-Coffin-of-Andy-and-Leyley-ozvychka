@@ -9,7 +9,8 @@
 voice_mod/
 ├── autoload/
 │   ├── VoiceManager.gd              # Основной менеджер голоса
-│   └── DialogueVoiceIntegration.gd  # Интеграция с диалогами
+│   ├── DialogueVoiceIntegration.gd  # Интеграция с диалогами
+│   └── VoiceTimingManager.gd        # Менеджер таймкодов (автоматическое сканирование)
 ├── languages/                       # ПАПКА ДЛЯ РУСИФИКАТОРА
 │   └── Русский.cld                  # Файл русификатора (обязателен для авто-озвучки)
 ├── audio/                           # ПАПКА ДЛЯ ВАШИХ ФАЙЛОВ ОЗВУЧКИ
@@ -18,6 +19,46 @@ voice_mod/
 │   └── ...
 └── config/
     └── voice_settings.ini           # Настройки мода
+```
+
+## ⏱️ Автоматические таймкоды
+
+### Как это работает
+
+**При первом запуске игры** система автоматически:
+1. Сканирует всю папку `voice_mod/audio/` на наличие аудиофайлов
+2. Измеряет длительность каждого файла
+3. Сохраняет результаты в кэш-файл `user://voice_timing_cache.json`
+4. При последующих запусках использует сохранённый кэш (быстро!)
+
+### Использование таймкодов
+
+```gdscript
+# Получить длительность озвучки для реплики по ID
+var duration = VoiceManager.get_voice_duration_for_line("F6mK5ZQ0", "andy")
+print("Длительность реплики: ", duration, " сек")
+
+# Или напрямую через VoiceTimingManager
+var timing = VoiceTimingManager.get_timing_for_file("andy_privet.flac")
+
+# Отсканировать все файлы вручную (если добавили новые)
+VoiceTimingManager.scan_all_audio_files()
+
+# Экспорт таймкодов в CSV для внешнего использования
+VoiceTimingManager.export_timing_to_csv("user://timing_export.csv")
+```
+
+### Сигналы VoiceTimingManager
+
+```gdscript
+VoiceTimingManager.timing_scan_started.connect(_on_scan_started)
+VoiceTimingManager.timing_scan_finished.connect(_on_scan_finished)
+
+func _on_scan_started() -> void:
+    print("Начато сканирование аудиофайлов...")
+
+func _on_scan_finished(total_files: int) -> void:
+    print("Сканирование завершено. Найдено таймкодов: ", total_files)
 ```
 
 ## 🎤 Как работает озвучка с русификатором
@@ -86,6 +127,7 @@ voice_mod/languages/Русский.cld
 1. Откройте `Project` → `Project Settings` → `Autoload`
 2. Добавьте следующие файлы как autoload:
    - `res://voice_mod/autoload/VoiceManager.gd` → имя: `VoiceManager`
+   - `res://voice_mod/autoload/VoiceTimingManager.gd` → имя: `VoiceTimingManager`
    - `res://voice_mod/autoload/DialogueVoiceIntegration.gd` → имя: `DialogueVoice` (опционально)
 
 ### Шаг 4: Интеграция с диалоговой системой
@@ -274,6 +316,12 @@ ID реплик можно найти в файле русификатора `Р
 ### Файл русификатора не найден
 - Убедитесь что файл `Русский.cld` находится в `voice_mod/languages/`
 - Проверьте что путь указан правильно в `VoiceManager.gd`: `const RUSIFIER_PATH := "res://voice_mod/languages/Русский.cld"`
+
+### Таймкоды не создаются автоматически
+- При первом запуске игры система автоматически сканирует папку `voice_mod/audio/`
+- Кэш сохраняется в `user://voice_timing_cache.json`
+- Для принудительного сканирования вызовите: `VoiceTimingManager.scan_all_audio_files()`
+- Проверьте консоль на сообщения: `[VoiceTimingManager] Сканирование завершено...`
 
 ### Озвучка не работает для некоторых реплик
 - Проверьте что ID реплики передаётся в `show_dialogue()`

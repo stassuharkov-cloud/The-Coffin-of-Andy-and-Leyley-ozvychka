@@ -3,9 +3,13 @@ extends Node
 # Интеграция VoiceManager с диалоговой системой The Coffin of Andy and Leyley
 # Этот скрипт нужно подключить к узлу диалоговой системы или тексту диалога
 # Поддерживает автоматическое использование реплик из русификатора
+# Интегрирован с VoiceTimingManager для работы с таймкодами
 
 # Ссылка на VoiceManager (автозагрузка)
 @onready var voice_manager: Node = get_node_or_null("/root/VoiceManager")
+
+# Ссылка на VoiceTimingManager (автозагрузка)
+@onready var timing_manager: Node = get_node_or_null("/root/VoiceTimingManager")
 
 # Настройки
 @export_group("Voice Settings")
@@ -31,6 +35,15 @@ func _ready() -> void:
 		print("[DialogueVoice] Интеграция активирована")
 		if use_rusifier and voice_manager.is_rusifier_loaded():
 			print("[DialogueVoice] Русификатор активен. Озвучка будет работать для всех реплик из него.")
+		
+		# Автоматическое сканирование таймкодов при первом запуске
+		if timing_manager:
+			var stats = timing_manager.get_stats()
+			if not stats["is_loaded"] or stats["total_timings"] == 0:
+				print("[DialogueVoice] Таймкоды не найдены. Запуск автоматического сканирования...")
+				timing_manager.scan_all_audio_files()
+			else:
+				print("[DialogueVoice] Таймкоды загружены. Записей: ", stats["total_timings"])
 	else:
 		push_warning("[DialogueVoice] VoiceManager не найден!")
 
