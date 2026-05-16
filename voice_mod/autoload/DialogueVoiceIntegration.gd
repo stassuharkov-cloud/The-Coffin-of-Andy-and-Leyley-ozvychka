@@ -4,12 +4,16 @@ extends Node
 # Этот скрипт нужно подключить к узлу диалоговой системы или тексту диалога
 # Поддерживает автоматическое использование реплик из русификатора
 # Интегрирован с VoiceTimingManager для работы с таймкодами
+# При первом запуске показывает загрузочный экран со сканированием аудио
 
 # Ссылка на VoiceManager (автозагрузка)
 @onready var voice_manager: Node = get_node_or_null("/root/VoiceManager")
 
 # Ссылка на VoiceTimingManager (автозагрузка)
 @onready var timing_manager: Node = get_node_or_null("/root/VoiceTimingManager")
+
+# Путь к файлу с таймкодами для проверки
+const TIMING_FILE_PATH := "user://voice_timing_cache.json"
 
 # Настройки
 @export_group("Voice Settings")
@@ -28,6 +32,7 @@ extends Node
 # Текущая реплика
 var current_text: String = ""
 var is_waiting_for_voice: bool = false
+var _loading_screen_shown: bool = false
 
 func _ready() -> void:
 	if voice_manager:
@@ -36,16 +41,53 @@ func _ready() -> void:
 		if use_rusifier and voice_manager.is_rusifier_loaded():
 			print("[DialogueVoice] Русификатор активен. Озвучка будет работать для всех реплик из него.")
 		
-		# Автоматическое сканирование таймкодов при первом запуске
+		# Проверяем наличие кэша таймкодов и показываем загрузочный экран если нужно
+		_check_and_show_loading_screen()
+	else:
+		push_warning("[DialogueVoice] VoiceManager не найден!")
+
+func _check_and_show_loading_screen() -> void:
+	# Проверяем существует ли файл с таймкодами
+	var cache_exists = FileAccess.file_exists(TIMING_FILE_PATH)
+	
+	if not cache_exists:
+		print("[DialogueVoice] Кэш таймкодов не найден. Показываем загрузочный экран...")
+		_show_loading_screen()
+	else:
+		# Проверяем загружен ли кэш в VoiceTimingManager
 		if timing_manager:
 			var stats = timing_manager.get_stats()
 			if not stats["is_loaded"] or stats["total_timings"] == 0:
-				print("[DialogueVoice] Таймкоды не найдены. Запуск автоматического сканирования...")
+				print("[DialogueVoice] Таймкоды не загружены. Запуск сканирования...")
 				timing_manager.scan_all_audio_files()
 			else:
 				print("[DialogueVoice] Таймкоды загружены. Записей: ", stats["total_timings"])
+
+func _show_loading_screen() -> void:
+	if _loading_screen_shown:
+		return
+	
+	_loading_screen_shown = true
+	
+	# Создаём загрузочный экран
+	var loader_scene = load("res://voice_mod/scenes/VoiceLoadingScreen.gd")
+	if loader_scene:
+		var loader = loader_scene.new()
+		get_tree().current_scene.add_child(loader)
+		loader.start_scanning()
+		
+		# Ждём завершения сканирования
+		await loader.timing_scan_completed
+		print("[DialogueVoice] Сканирование завершено. Записей: ", loader.get_stats()["cached_timings"])
+		
+		# Перезагружаем кэш в VoiceTimingManager
+		if timing_manager:
+			timing_manager._load_timing_cache()
 	else:
-		push_warning("[DialogueVoice] VoiceManager не найден!")
+		print("[DialogueVoice] Не удалось загрузить сцену загрузочного экрана!")
+		# Фоллбэк - синхронное сканирование
+		if timing_manager:
+			timing_manager.scan_all_audio_files_sync()
 
 # Вызывать при показе новой реплики
 func show_dialogue(text: String, speaker: String = "", p_line_id: String = "") -> void:
